@@ -1,0 +1,84 @@
+@font-face {
+	font-family: 'NimbusRoman'; /*a name to be used later*/
+	src: url('/resources/fonts/NimbusRomNo9L-Reg.otf'); /*URL to font*/
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	background: #eee8d5;
+	height: 100%;
+	color: #586e75;
+	font-family: 'NimbusRoman';
+}
+
+h1 {
+	margin: 0 0 10px 0;
+	padding: 0;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+img {
+	border: 1px solid #b58900;
+	margin: 0 10px 0 0;
+	float: left;
+}
+
+#page {
+	margin: 0 auto;
+	padding: 0;
+	background: #fdf6e3;
+	width: 1024px;
+	min-height: 100%;
+}
+
+#menu {
+	margin: 20px 5px 5px 5px;
+	padding: 20px 10px;
+	border-right: 1px dotted #b58900;
+	width: 250px;
+	position: absolute;
+	min-height: 256px;
+	display: inline-block;
+}
+
+#booklist {
+//	outline: 2px solid red;
+	margin: 20px 0 0 300px;
+	padding: 0;
+	display: inline-block;
+}
+
+#entry {
+	margin: 10px 0;
+	padding: 10px;
+	float: both;
+	width: 600px;
+	border-bottom: 1px dashed #b58900;
+}
+
+#tags {
+	margin: 5px 0 0 0;
+	padding: 0;
+	color: #2aa198;
+	text-align: right;
+}
+
+#book {
+//	outline: 2px solid green;
+//	background: #fdf6e3;
+	margin: 0;
+	padding: 0;
+}
+
+#text {
+//	outline: 2px solid blue;
+//	background: #ff0000;
+	margin: 0 0 0 90px;
+	padding: 0;
+	line-height: 15pt;
+}

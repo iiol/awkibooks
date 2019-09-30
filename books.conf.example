@@ -1,0 +1,23 @@
+Author: Brain Kernighan
+Author: Dennis Richi
+Name: Практика программирования
+Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Description: Pellentesque non ex vel metus tristique consectetur.
+Description: In dapibus nulla vitae nisi. Hello World
+Tag: C
+Tag: Algorithms
+Image: 1.jpg
+File: 1.pdf
+---
+Author: Гук Михаил
+Name: Аппаратные средства IBM PC
+Description: Съешь же ещё этих мягких французских булочек, да выпей чаю.
+Tag: Book2
+Tag: Book3
+Image: 2.jpg
+File: 2.pdf
+---
+Author: Ivanov Ivan Ivanovich
+Name: Book name
+Tag: Book2
+File: 3.pdf
