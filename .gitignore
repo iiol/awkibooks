@@ -1,5 +1,2 @@
 *.swp
 *.swo
-books.conf
-./resources/books/*
-./resources/img/*
