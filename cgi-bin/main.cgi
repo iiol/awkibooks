@@ -1,5 +1,6 @@
 #!/usr/bin/awk -f
 
+@include "./hexcodes.awk"
 
 # Global variables:
 #
@@ -9,6 +10,47 @@
 # image  -- path to preview image of book
 # tag    -- tags list of book
 
+func urldecode(text,    hex, i, hextab, decoded, len, c, c1, c2, code) {
+	# urldecode function from Heiner Steven
+	# http://www.shelldorado.com/scripts/cmds/urldecode
+
+	split("0 1 2 3 4 5 6 7 8 9 a b c d e f", hex, " ")
+	for (i = 0; i < 16; i++)
+		hextab[hex[i+1]] = i
+
+	decoded = ""
+	i = 1
+	len = length(text)
+
+	while (i <= len) {
+		c = substr (text, i, 1)
+		if (c == "%") {
+			if (i + 2 <= len) {
+				c1 = tolower(substr(text, i + 1, 1))
+				c2 = tolower(substr(text, i + 2, 1))
+				if (hextab [c1] != "" || hextab [c2] != "") {
+					code = 0 + hextab[c1] * 16 + hextab[c2] + 0
+					c = hexval[code]
+					i = i + 2
+				}
+			}
+		} else if ( c == "+" ) {
+			# special handling: "+" means " "
+			c = " "
+		}
+
+		decoded = decoded c
+		++i
+	}
+
+	# change linebreaks to \n
+	gsub(/\r\n/, "\n", decoded)
+
+	# remove last linebreak
+	sub(/[\n\r]*$/,"", decoded)
+
+	return decoded
+}
 
 func print_header(title) {
 	print "Content-Type: text/html; charset=utf-8\r\n"
@@ -76,14 +118,13 @@ BEGIN {
 	for (idx in vars) {
 		delete tmp
 		split(vars[idx], tmp, "=")
-		VAR[tmp[1]] = tmp[2]
+		VAR[urldecode(tmp[1])] = urldecode(tmp[2])
 	}
 
 	delete tmp
 	delete vars
 
 	print_header("Books")
-
 
 	while ((getline < configfile) > 0) {
 		if (/^Author: .+/)
