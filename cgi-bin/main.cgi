@@ -10,7 +10,8 @@
 # image  -- path to preview image of book
 # tag    -- tags list of book
 
-func urldecode(text,    hex, i, hextab, decoded, len, c, c1, c2, code) {
+func urldecode(text,    hex, i, hextab, decoded, len, c, c1, c2, code)
+{
 	# urldecode function from Heiner Steven
 	# http://www.shelldorado.com/scripts/cmds/urldecode
 
@@ -52,7 +53,18 @@ func urldecode(text,    hex, i, hextab, decoded, len, c, c1, c2, code) {
 	return decoded
 }
 
-func print_header(title) {
+func print_menu()
+{
+	print "<form name=\"searchform\" method=\"get\" action=\"/cgi-bin/main.cgi\">"
+	print "<input type=\"text\" name=\"search\">"
+	print "<div id=\"button\">"
+	print "<input type=\"submit\" name=\"button\" value=\"Search\">"
+	print "</div>"
+	print "</form>"
+}
+
+func print_header(title)
+{
 	print "Content-Type: text/html; charset=utf-8\r\n"
 	print "<html>"
 	print "<head>"
@@ -63,19 +75,20 @@ func print_header(title) {
 	print "<body>"
 	print "<div id=\"page\">"
 	print "<div id=\"menu\">"
-	print "Hello World<br>"
-	print "TODO"
+	print_menu()
 	print "</div>"
 	print "<div id=\"booklist\">"
 }
 
-func print_footer() {
+func print_footer()
+{
 	print "</div></div>"
 	print "</body>"
 	print "</html>"
 }
 
-func print_book() {
+func print_book()
+{
 	if (!name)
 		name = "NULL"
 	if (!author)
@@ -140,11 +153,16 @@ BEGIN {
 		else if (/^File: .+/)
 			filename = gensub(/File: (.+)/, "\\1", "g");
 		else if (/^---$/) {
-			author = substr(author, 3)
+			author = tolower(substr(author, 3))
 			tag = substr(tag, 2)
 
 			if (VAR["tag"] && match(tag, "(^|\n)" VAR["tag"] "($|\n)") ||
-			    !VAR["tag"])
+			    !VAR["tag"] && !VAR["search"])
+				print_book()
+			else if (VAR["search"] && (\
+			    match(tolower(author), tolower(VAR["search"])) ||
+			    match(tolower(desc),   tolower(VAR["search"])) ||
+			    match(tolower(name),   tolower(VAR["search"]))))
 				print_book()
 
 			author = name = desc = image = tag = ""
@@ -155,7 +173,12 @@ BEGIN {
 	tag = substr(tag, 2)
 
 	if (VAR["tag"] && match(tag, "(^|\n)" VAR["tag"] "($|\n)") ||
-	    !VAR["tag"])
+	    !VAR["tag"] && !VAR["search"])
+		print_book()
+	else if (VAR["search"] && (\
+	    match(tolower(author), tolower(VAR["search"])) ||
+	    match(tolower(desc),   tolower(VAR["search"])) ||
+	    match(tolower(name),   tolower(VAR["search"]))))
 		print_book()
 
 	print_footer()
