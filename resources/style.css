@@ -57,6 +57,11 @@ img {
 	display: inline-block;
 }
 
+#taglist {
+	margin: 0;
+	padding: 20px 0 0 5px;
+}
+
 #button {
 	padding: 0;
 	margin: 0 auto;
@@ -78,10 +83,13 @@ img {
 	border-bottom: 1px dashed #b58900;
 }
 
+#taglink {
+	color: #2aa198;
+}
+
 #tags {
 	margin: 10px 0 0 0;
 	padding: 0;
-	color: #2aa198;
 	text-align: right;
 }
 

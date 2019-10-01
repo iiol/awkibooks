@@ -55,10 +55,19 @@ func urldecode(text,    hex, i, hextab, decoded, len, c, c1, c2, code)
 
 func print_menu()
 {
+	print "Поиск по книгам:"
 	print "<form name=\"searchform\" method=\"get\" action=\"/cgi-bin/main.cgi\">"
 	print "<input type=\"text\" name=\"search\">"
 	print "<div id=\"button\">"
 	print "<input type=\"submit\" name=\"button\" value=\"Search\">"
+	print "</div>"
+	print "<div id=\"taglist\">"
+	print "Все теги:<br><br>"
+
+	cmd = "cat '" configfile "' | grep '^Tag: ' | cut -d ' ' -f 2 | sort | uniq"
+	while ((cmd | getline str) > 0)
+		print "<a id=\"taglink\" href=\"?tag=" str "\">#" str "</a><br>"
+
 	print "</div>"
 	print "</form>"
 }
@@ -118,7 +127,7 @@ func print_book()
 
 	cmd = "echo '" tag "'"
 	while ((cmd | getline str) > 0)
-		print "<a href=\"?tag=" str "\">#" str "</a>"
+		print "<a id=\"taglink\" href=\"?tag=" str "\">#" str "</a>"
 
 	print "</div>"					# div id="tags"
 	print "<div style=\"clear: both\"></div>"	# positioning hack
