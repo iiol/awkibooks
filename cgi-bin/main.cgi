@@ -114,6 +114,8 @@ func print_book()
 	print "</a>"
 	print "<div id=\"tags\">"
 
+	gsub(/'/, "\\&#39;", tag)			# sequrity
+
 	cmd = "echo '" tag "'"
 	while ((cmd | getline str) > 0)
 		print "<a href=\"?tag=" str "\">#" str "</a>"
