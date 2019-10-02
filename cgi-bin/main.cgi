@@ -164,7 +164,7 @@ BEGIN {
 		else if (/^File: .+/)
 			filename = gensub(/File: (.+)/, "\\1", "g");
 		else if (/^---$/) {
-			author = tolower(substr(author, 3))
+			author = substr(author, 3)
 			tag = substr(tag, 2)
 
 			if (VAR["tag"] && match(tag, "(^|\n)" VAR["tag"] "($|\n)") ||
