@@ -1,60 +1,13 @@
-#!/usr/bin/awk -f
+#!/usr/bin/gawk -f
 
-@include "./hexcodes.awk"
+@include "urldecode.awk"
+@include "bookops.awk"
+@include "config.awk"
 
-# Global variables:
-#
-# author -- author name
-# name   -- book name
-# desc   -- description of book
-# image  -- path to preview image of book
-# tag    -- tags list of book
-
-func urldecode(text,    hex, i, hextab, decoded, len, c, c1, c2, code)
+func print_menu(    str, cmd, bookconf)
 {
-	# urldecode function from Heiner Steven
-	# http://www.shelldorado.com/scripts/cmds/urldecode
+	bookconf = HOMEPATH BOOK_CONF
 
-	split("0 1 2 3 4 5 6 7 8 9 a b c d e f", hex, " ")
-	for (i = 0; i < 16; i++)
-		hextab[hex[i+1]] = i
-
-	decoded = ""
-	i = 1
-	len = length(text)
-
-	while (i <= len) {
-		c = substr (text, i, 1)
-		if (c == "%") {
-			if (i + 2 <= len) {
-				c1 = tolower(substr(text, i + 1, 1))
-				c2 = tolower(substr(text, i + 2, 1))
-				if (hextab [c1] != "" || hextab [c2] != "") {
-					code = 0 + hextab[c1] * 16 + hextab[c2] + 0
-					c = hexval[code]
-					i = i + 2
-				}
-			}
-		} else if ( c == "+" ) {
-			# special handling: "+" means " "
-			c = " "
-		}
-
-		decoded = decoded c
-		++i
-	}
-
-	# change linebreaks to \n
-	gsub(/\r\n/, "\n", decoded)
-
-	# remove last linebreak
-	sub(/[\n\r]*$/,"", decoded)
-
-	return decoded
-}
-
-func print_menu()
-{
 	print "Поиск по книгам:"
 	print "<form name=\"searchform\" method=\"get\" action=\"/cgi-bin/main.cgi\">"
 	print "<input type=\"text\" name=\"search\">"
@@ -64,20 +17,44 @@ func print_menu()
 	print "<div id=\"taglist\">"
 	print "Все теги:<br><br>"
 
-	cmd = "cat '" configfile "' | grep '^Tag: ' | cut -d ' ' -f 2 | sort | uniq"
+	cmd = "cat '" bookconf "' | grep '^Tag: ' | cut -d ' ' -f 2 | sort | uniq"
 	while ((cmd | getline str) > 0)
 		print "<a id=\"taglink\" href=\"?tag=" str "\">#" str "</a><br>"
+
+	close(cmd)
 
 	print "</div>"
 	print "</form>"
 }
 
-func print_header(title)
+func print_body(    cmd, file, book)
+{
+	# Hack for making book an array
+	book[""] = ""; delete book
+
+	cmd = "ls " HOMEPATH BOOKPATH
+	while ((cmd | getline file) > 0) {
+		if (!find_book_by_file(book, file))
+			continue
+		if (VAR["tag"] && match(book["tags"], "(^|\n)" VAR["tag"] "($|\n)") ||
+		   !VAR["tag"] && !VAR["search"])
+			print sprint_book(book)
+		else if (VAR["search"] && (                                 \
+		    match(tolower(book["author"]), tolower(VAR["search"])) ||
+		    match(tolower(book["desc"]),   tolower(VAR["search"])) ||
+		    match(tolower(book["name"]),   tolower(VAR["search"]))))
+			print sprint_book(book)
+	}
+
+	close(cmd)
+}
+
+func print_html(title)
 {
 	print "Content-Type: text/html; charset=utf-8\r\n"
 	print "<html>"
 	print "<head>"
-	print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/resources/style.css\">"
+	print "<link rel=\"stylesheet\" type=\"text/css\" href=\"" CSS_FILE "\">"
 	print "<meta charset=\"UTF-8\">"
 	print "<title>" title "</title>"
 	print "</head>"
@@ -87,57 +64,14 @@ func print_header(title)
 	print_menu()
 	print "</div>"
 	print "<div id=\"booklist\">"
-}
-
-func print_footer()
-{
+	print_body()
 	print "</div></div>"
 	print "</body>"
 	print "</html>"
 }
 
-func print_book()
+func main(    idx, vars, tmp)
 {
-	if (!name)
-		name = "NULL"
-	if (!author)
-		author = "NULL"
-	if (!desc)
-		desc = ""
-	if (!image)
-		image = "default.jpg"
-
-	print "<a href=\"/resources/books/" filename "\">"
-	print "<div id=\"entry\">"
-	print "<div id=\"book\">"
-	print "<h1>" name "</h1>"
-	print "<img src=\"/resources/img/" image "\" alt=\"\">"
-	print "<div id=\"text\">"
-	print "Author: " author "<br><br>"
-
-	if (desc)
-		print desc "<br>"
-
-	print "</div>"					# div id="text"
-	print "</div>"					# div id="book"
-	print "</a>"
-	print "<div id=\"tags\">"
-
-	gsub(/'/, "\\&#39;", tag)			# sequrity
-
-	cmd = "echo '" tag "'"
-	while ((cmd | getline str) > 0)
-		print "<a id=\"taglink\" href=\"?tag=" str "\">#" str "</a>"
-
-	print "</div>"					# div id="tags"
-	print "<div style=\"clear: both\"></div>"	# positioning hack
-	print "</div>"					# div id="entry"
-}
-
-BEGIN {
-	configfile = ENVIRON["DOCUMENT_ROOT"] "./books.conf"
-
-
 	split(ENVIRON["QUERY_STRING"], vars, "&");
 	for (idx in vars) {
 		delete tmp
@@ -148,49 +82,7 @@ BEGIN {
 	delete tmp
 	delete vars
 
-	print_header("Books")
-
-	while ((getline < configfile) > 0) {
-		if (/^Author: .+/)
-			author = author ", " gensub(/Author: (.+)/, "\\1", "g")
-		else if (/^Tag: .+/)
-			tag = tag "\n" gensub(/Tag: (.+)/, "\\1", "g")
-		else if (/^Name: .+/)
-			name = gensub(/Name: (.+)/, "\\1", "g")
-		else if (/^Description: .+/)
-			desc = desc " " gensub(/Description: (.+)/, "\\1", "g")
-		else if (/^Image: .+/)
-			image = gensub(/Image: (.+)/, "\\1", "g")
-		else if (/^File: .+/)
-			filename = gensub(/File: (.+)/, "\\1", "g");
-		else if (/^---$/) {
-			author = substr(author, 3)
-			tag = substr(tag, 2)
-
-			if (VAR["tag"] && match(tag, "(^|\n)" VAR["tag"] "($|\n)") ||
-			    !VAR["tag"] && !VAR["search"])
-				print_book()
-			else if (VAR["search"] && (\
-			    match(tolower(author), tolower(VAR["search"])) ||
-			    match(tolower(desc),   tolower(VAR["search"])) ||
-			    match(tolower(name),   tolower(VAR["search"]))))
-				print_book()
-
-			author = name = desc = image = tag = ""
-		}
-	}
-
-	author = substr(author, 3)
-	tag = substr(tag, 2)
-
-	if (VAR["tag"] && match(tag, "(^|\n)" VAR["tag"] "($|\n)") ||
-	    !VAR["tag"] && !VAR["search"])
-		print_book()
-	else if (VAR["search"] && (\
-	    match(tolower(author), tolower(VAR["search"])) ||
-	    match(tolower(desc),   tolower(VAR["search"])) ||
-	    match(tolower(name),   tolower(VAR["search"]))))
-		print_book()
-
-	print_footer()
+	print_html("Books")
 }
+
+BEGIN {main()}
