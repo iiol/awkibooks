@@ -3,14 +3,28 @@
 	src: url('/resources/fonts/NimbusRomNo9L-Reg.otf'); /*URL to font*/
 }
 
-input[type=text] {
+input[name=login] {
+	padding: 12px 20px;
+	margin: 8px 8px 0 0;
+	width: 45%;
+	box-sizing: border-box;
+}
+
+input[name=password] {
+	padding: 12px 20px;
+	margin: 8px 8px 0 0;
+	width: 45%;
+	box-sizing: border-box;
+}
+
+input[name=search] {
 	padding: 12px 20px;
 	margin: 8px 0;
 	width: 100%;
 	box-sizing: border-box;
 }
 
-input[type=text]:focus {
+input[name=search]:focus {
 	border: 2px solid #268bd2;
 }
 
@@ -55,6 +69,16 @@ img {
 	position: absolute;
 	min-height: 256px;
 	display: inline-block;
+}
+
+#signin_fields {
+	margin: 0;
+	padding: 0 0 10px 0;
+}
+
+#username {
+	margin: 0;
+	padding: 0 0 20px 0;
 }
 
 #taglist {

@@ -1,6 +1,7 @@
 #!/bin/false
 
 @include "config.awk"
+@include "glob.awk"
 
 # Fields of struct book:
 #   book["name"]     - book name
@@ -31,27 +32,25 @@ func sprint_book(book,    buf, str, cmd)
 	buf = buf "<div id=\"entry\">"			# begin entry block
 	buf = buf "<div id=\"book\">"			# begin book block
 	buf = buf "<h1>" book["name"] "</h1>"
-	buf = buf "<img src=\"" IMAGPATH book["img"] "\" alt=\"\">"
-	buf = buf "<div id=\"text\">"			# begin text
-	buf = buf "Author: " book["author"] "<br><br>"
+	buf = buf "<img src=\"" IMAGPATH book["img"] "\" alt=\"\"/>"
+	buf = buf "<div id=\"text\">"			# begin text block
+	buf = buf "Author: " book["author"] "<br/><br/>"
 
 	if (book["desc"])
-		buf = buf book["desc"] "<br>"
+		buf = buf book["desc"] "<br/>"
 
 	buf = buf "</div>"				# end of text block
 	buf = buf "</div>"				# end of book block
-	buf = buf "</a>"
 	buf = buf "<div id=\"tags\">"			# begin tags block
 
-	gsub(/'/, "\\&#39;", book["tags"])		# delete '\' for security
-
-	cmd = "echo '" book["tags"] "'"
+	cmd = "echo '" shell_sec(book["tags"]) "'"
 	while ((cmd | getline str) > 0)
 		buf = buf "<a id=\"taglink\" href=\"?tag=" str "\">#" str "</a>"
 
 	buf = buf "</div>"				# end of tags block
 	buf = buf "<div style=\"clear: both\"></div>"	# positioning hack
 	buf = buf "</div>"				# end of entry block
+	buf = buf "</a>"
 
 	return buf
 }
@@ -114,9 +113,7 @@ func find_book_by_file(book, file,    str, isret, bookconf)
 # @retval         formatted string
 func prefix_each_line(pref, buf,    cmd, str, ret)
 {
-	gsub(/'/, "'\\'", buf)		# delete '\' for security
-	cmd = "echo '" buf "'"
-
+	cmd = "echo '" shell_sec(buf) "'"
 	while ((cmd | getline str) > 0)
 		ret = ret pref str "\n"
 
@@ -124,7 +121,7 @@ func prefix_each_line(pref, buf,    cmd, str, ret)
 	return ret
 }
 
-# @desc           add book - add book into config
+# @desc           add_book - add book into config
 # @param[in]      book - book
 # @retval         void
 func add_book(book,    _, buf, bookconf)
