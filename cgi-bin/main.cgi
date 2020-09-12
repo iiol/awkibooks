@@ -16,9 +16,11 @@ func format_menu(    str, cmd, bookconf, buf)
 		buf = buf "<form name=\"signin\" method=\"POST\" action=\"/cgi-bin/main.cgi\">"
 		buf = buf "<div id=\"signin_fields\">"
 		buf = buf "<input type=\"text\" name=\"login\"/>"
-		buf = buf "<input type=\"text\" name=\"password\"/>"
+		buf = buf "<input type=\"password\" name=\"password\"/>"
+		buf = buf "<div id=\"message\">"
 		if (STATES["unknown_user"])
-			buf = buf "Неизвестный пользователь<br/>"
+			buf = buf "Неверный пользователь или пароль"
+		buf = buf "</div>"
 		buf = buf "</div><div id=\"button\">"
 		buf = buf "<input type=\"submit\" name=\"button\" value=\"Вход\"/>"
 		buf = buf "</div>"

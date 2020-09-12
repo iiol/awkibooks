@@ -4,21 +4,21 @@
 }
 
 input[name=login] {
-	padding: 12px 20px;
+	padding: 12px 8px;
 	margin: 8px 8px 0 0;
 	width: 45%;
 	box-sizing: border-box;
 }
 
 input[name=password] {
-	padding: 12px 20px;
+	padding: 12px 8px;
 	margin: 8px 8px 0 0;
 	width: 45%;
 	box-sizing: border-box;
 }
 
 input[name=search] {
-	padding: 12px 20px;
+	padding: 12px 8px;
 	margin: 8px 0;
 	width: 100%;
 	box-sizing: border-box;
@@ -74,6 +74,11 @@ img {
 #signin_fields {
 	margin: 0;
 	padding: 0 0 10px 0;
+}
+
+#message {
+	margin: 0;
+	padding: 10px 0 0 0;
 }
 
 #username {
