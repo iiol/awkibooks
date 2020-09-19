@@ -20,8 +20,8 @@ func format_menu(    str, cmd, bookconf, buf)
 		buf = buf "<div id=\"message\">"
 		if (STATES["unknown_user"])
 			buf = buf "Неверный пользователь или пароль"
-		buf = buf "</div>"
-		buf = buf "</div><div id=\"button\">"
+		buf = buf "</div></div>"
+		buf = buf "<div id=\"button\">"
 		buf = buf "<input type=\"submit\" name=\"button\" value=\"Вход\"/>"
 		buf = buf "</div>"
 		buf = buf "</form>"
@@ -32,15 +32,24 @@ func format_menu(    str, cmd, bookconf, buf)
 		buf = buf "</div>"
 	}
 
-	buf = buf "Поиск по книгам:"
 	buf = buf "<form name=\"searchform\" method=\"GET\" action=\"/cgi-bin/main.cgi\">"
-	buf = buf "<input type=\"text\" name=\"search\"/>"
+	buf = buf "<label for=\"search\">Поиск по книгам:</lavel>"
+	buf = buf "<input type=\"text\" name=\"search\" id=\"search\"/>"
 	buf = buf "<div id=\"button\">"
 	buf = buf "<input type=\"submit\" name=\"button\" value=\"Найти\"/>"
 	buf = buf "</div>"
 	buf = buf "</form>"
+	buf = buf "<br/>"
+
+	if (USER["upload"] == "true")
+		buf = buf "<a id=\"action\" href=\"?action=upload\">Загрузить книгу</a><br/>"
+	if (USER["remove"] == "true")
+		buf = buf "<a id=\"action\" href=\"?action=remove\">Удалить книгу</a><br/>"
+	if (USER["adduser"] == "true")
+		buf = buf "<a id=\"action\" href=\"?action=adduser\">Добавить пользователя</a><br/>"
+
 	buf = buf "<div id=\"taglist\">"
-	buf = buf "Все теги:<br/><br/>"
+	buf = buf "Все теги:<br/>"
 
 	cmd = "cat '" bookconf "' | grep '^Tag: ' | cut -d ' ' -f 2 | sort | uniq"
 	while ((cmd | getline str) > 0)
@@ -53,7 +62,7 @@ func format_menu(    str, cmd, bookconf, buf)
 	return buf
 }
 
-func format_body(    cmd, file, book, buf)
+func format_booklist(    cmd, file, book, buf)
 {
 	buf = ""
 
@@ -79,10 +88,68 @@ func format_body(    cmd, file, book, buf)
 	return buf
 }
 
+func format_adduser(    buf)
+{
+	buf = buf "<form name=\"adduser\" method=\"POST\" action=\"/cgi-bin/main.cgi\">"
+	buf = buf "<input type=\"text\" name=\"newuser\"/><br/>"
+	buf = buf "<input type=\"password\" name=\"newpasswd\"/><br/>"
+	buf = buf "<input type=\"checkbox\" name=\"upload\" id=\"upload\">"
+	buf = buf "<label for=\"upload\">Upload</label><br/>"
+	buf = buf "<input type=\"checkbox\" name=\"remove\" id=\"remove\">"
+	buf = buf "<label for=\"remove\">Remove</label><br/>"
+	buf = buf "<input type=\"checkbox\" name=\"adduser\" id=\"adduser\">"
+	buf = buf "<label for=\"adduser\">Add user</label><br/>"
+	buf = buf "<input type=\"submit\" name=\"button\" value=\"Отправить\"/>"
+	buf = buf "</form>"
+
+	return buf
+}
+
+func format_upload(    buf)
+{
+	buf = buf "<form name=\"upload_book\" method=\"POST\" action=\"/cgi-bin/main.cgi\" enctype=\"multipart/form-data\">"
+	buf = buf "<label for=\"name\">Name:</label><br/>"
+	buf = buf "<input type=\"text\" id=\"name\" name=\"name\"><br/><br/>"
+
+	buf = buf "<label for=\"authors\">Authors (each on new line):</label><br/>"
+	buf = buf "<textarea id=\"authors\" name=\"authors\" rows=\"5\" cols=\"50\"></textarea></br></br>"
+
+	buf = buf "<label for=\"desc\">Description:</label><br/>"
+	buf = buf "<textarea id=\"desc\" name=\"desc\" rows=\"5\" cols=\"50\"></textarea></br></br>"
+
+	buf = buf "<label for=\"tags\">Comma separated tags:</label><br/>"
+	buf = buf "<textarea id=\"tags\" name=\"tags\" rows=\"2\" cols=\"50\"></textarea></br></br>"
+
+	buf = buf "<label for=\"image\">Book cover (with .jpg extention): </label>"
+	buf = buf "<input type=\"file\" id=\"image\" name=\"image\"><br/><br/>"
+
+	buf = buf "<label for=\"file\">Book file (with .pdf or .djvu extention): </label>"
+	buf = buf "<input type=\"file\" id=\"file\" name=\"file\"/><br/><br/>"
+
+	buf = buf "<input type=\"submit\" name=\"button\" value=\"Отправить\"/><br/>"
+	buf = buf "</form>"
+	return buf
+}
+
+func format_body(    buf)
+{
+	if (VAR["action"] == "adduser" && USER["adduser"] == "true")
+		buf = format_adduser()
+	else if (VAR["action"] == "upload" && USER["upload"] == "true")
+		buf = format_upload()
+	else
+		buf = format_booklist()
+
+	return buf
+}
+
 func format_headers(    buf)
 {
 	buf = ""
 	buf = buf "Content-Type: text/html; charset=utf-8\n"
+
+	if (REDIRECT)
+		buf = buf "Location: " REDIRECT "\n"
 
 	for (idx in SAVED_COOKIES)
 		buf = buf "Set-Cookie: " idx "=" SAVED_COOKIES[idx] "; path=/\n"
@@ -104,9 +171,9 @@ func format_html(title,    buf)
 	buf = buf "<div id=\"menu\">"			# begin of menu
 	buf = buf format_menu()
 	buf = buf "</div>"				# end of menu
-	buf = buf "<div id=\"booklist\">"		# begin of booklist
+	buf = buf "<div id=\"body\">"			# begin of body
 	buf = buf format_body()
-	buf = buf "</div>"				# end of booklist
+	buf = buf "</div>"				# end of body
 	buf = buf "</div>"				# end of page
 	buf = buf "</body>"
 	buf = buf "</html>"
@@ -121,7 +188,6 @@ func main(    html, head)
 
 	print head
 	print html
-	print GLOB
 }
 
 BEGIN {main()}

@@ -148,3 +148,69 @@ func add_book(book,    _, buf, bookconf)
 
 	print buf "---" >> bookconf
 }
+
+# @desc           save_book - save book in file
+# @param[in]      file      - content of file
+# @param[in]      extention - extention of file
+# @retval         name of saved file
+func save_book(file, extention,    cmd, filename)
+{
+	cmd = "mktemp --suff='." shell_sec(extention) "' " HOMEPATH BOOKPATH "XXXXXXXX"
+	cmd | getline filename
+	close(cmd)
+
+	print file >filename
+	close(filename)
+
+	return basename(filename)
+}
+
+# @desc           save_cover - save cover in file
+# @param[in]      file - content of file
+# @retval         name of saved file
+func save_cover(file,    cmd, filename)
+{
+	cmd = "mktemp --suff=.jpg " HOMEPATH IMAGPATH "XXXXXXXX"
+	cmd | getline filename
+	close(cmd)
+
+	print file >filename
+	close(filename)
+
+	return basename(filename)
+}
+
+# @desc           prep_cover - prepare cover
+# @param[in]      filename - filename
+# @retval         filename
+func prep_cover(filename,    old, new, cmd)
+{
+	old = HOMEPATH IMAGPATH shell_sec(filename)
+	new = old ".new"
+	cmd = PREPIMG " '" old "' '" new "' && mv '" new "' '" old "'"
+	system(cmd)
+
+	return filename
+}
+
+# @desc           is_valid_img_ext - check for image file extention validity
+# @param[in]      ext - extention
+# @retval         0, 1
+func is_valid_img_ext(ext)
+{
+	if (ext == "jpg")
+		return 1
+
+	return 0
+}
+
+# @desc           is_valid_book_ext - check for book file extention validity
+# @param[in]      ext - extention
+# @retval         0, 1
+func is_valid_book_ext(ext)
+{
+	if (ext == "pdf" || ext == "djvu")
+		return 1
+
+	return 0
+}

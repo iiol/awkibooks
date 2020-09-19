@@ -7,17 +7,18 @@
 # user["password"] - sha1 hash of password
 # user["remove"]   - remove right
 # user["upload"]   - upload right
+# user["adduser"]  - add user right
 
 # @desc           get_user - get user by username
 # @param[out]     user     - user
 # @param[in]      username - username
 # @retval         0 - user doesn't exist, 1 - success
-func get_user(user, username)
+func get_user(user, username,    isret)
 {
 	userconf = HOMEPATH USER_CONF
 
 	while ((getline str < userconf) > 0) {
-		if (match(str, "^Username:[[:space:]]+" username)) {
+		if (match(str, "^Username:[[:space:]]+" username "$")) {
 			user["name"] = username
 			isret = 1
 		}
@@ -27,6 +28,8 @@ func get_user(user, username)
 			user["upload"] = gensub(/UploadBook: (.+)/, "\\1", "g", str)
 		else if (str ~ /^RemoveBook: .+/)
 			user["remove"] = gensub(/RemoveBook: (.+)/, "\\1", "g", str)
+		else if (str ~ /^AddUser: .+/)
+			user["adduser"] = gensub(/AddUser: (.+)/, "\\1", "g", str)
 		else if (str ~ /^---$/) {
 			if (isret) {
 				close(userconf)
@@ -36,6 +39,30 @@ func get_user(user, username)
 		}
 	}
 
+	close(userconf)
+	return 0
+}
+
+# @desc           add_user - add new user in config
+# @param[in]      user     - struct with user data
+# @retval         void
+func add_user(user,    _, userconf, buf)
+{
+	userconf = HOMEPATH USER_CONF
+
+	if (!user["name"] || !user["password"] || get_user(_, user["name"]))
+		return 0
+
+	# TODO: delete first buf
+	buf = ""
+	buf = buf "Username: "     user["name"] "\n"
+	buf = buf "Password: "     user["password"] "\n"
+	buf = buf "UploadBook: " ((user["upload"] == "true") ? "true\n" : "false\n")
+	buf = buf "RemoveBook: " ((user["remove"] == "true") ? "true\n" : "false\n")
+	buf = buf "AddUser: "    ((user["adduser"] == "true") ? "true\n" : "false\n")
+	buf = buf "---"
+
+	print buf >> userconf
 	close(userconf)
 }
 
@@ -52,6 +79,7 @@ func find_session(username,    cmd, cmd2, file, token)
 		cmd2 = "cat '" HOMEPATH SESSIONPATH shell_sec(file) "'"
 		cmd2 | getline token
 		close(cmd2)
+		close(cmd)
 		return token
 	}
 
