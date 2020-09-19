@@ -1,10 +1,6 @@
-Username: IIOL
-Password: 1234
-UploadBook: true
-RemoveBook: false
----
 Username: anonymous
 Password: none
 UploadBook: false
 RemoveBook: false
+AddUser: false
 ---

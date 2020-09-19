@@ -257,6 +257,7 @@ func hash_password(user, password,    cmd, hash)
 {
 	cmd = "echo '" shell_sec(user password) "' | sha1sum | cut -d ' ' -f 1"
 	cmd | getline hash
+	close(cmd)
 
 	return hash
 }

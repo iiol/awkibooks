@@ -7,6 +7,10 @@ input[type=text] {
 	padding: 12px 8px;
 }
 
+input[type=password] {
+	padding: 12px 8px;
+}
+
 input[name=login] {
 	margin: 8px 8px 0 0;
 	width: 45%;
